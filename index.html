@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carte Interactive de Drancy - Concours National de la Résistance</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; padding: 0; }
+        header { background: #799dc2; color: white; text-align: center; padding: 15px; }
+        main { padding: 20px; }
+        #map { width: 100%; height: 500px; margin-top: 20px; }
+        .info { text-align: center; margin: 20px; }
+        #localisationButton { margin-top: 10px; padding: 10px; background: #799dc2; color: white; border: none; cursor: pointer; }
+        #resetButton { display: none; margin-top: 10px; padding: 10px; background: #799dc2; color: white; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Carte Interactive de Drancy</h1>
+        <p>Un projet réalisé dans le cadre du <a href="https://www.education.gouv.fr/le-concours-national-de-la-resistance-et-de-la-deportation-4295" target="_blank">Concours National de la Résistance et de la Déportation</a></p>
+    </header>
+    
+    <main>
+        <section class="info">
+            <p>Explorez des contenus interactifs liés à la mémoire de la Résistance et de la Déportation à Drancy.</p>
+            <button id="localisationButton" onclick="getLocation()">Utiliser ma géolocalisation</button>
+        </section>
+        
+        <div id="map"></div>
+        <button id="resetButton" onclick="resetMap()">Revenir à la carte de Drancy</button>
+    </main>
+    
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script>
+        var map = L.map('map').setView([48.925, 2.45], 14);
+        
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; OpenStreetMap contributors'
+        }).addTo(map);
+        
+        var pointsInteret = [
+            {
+                coord: [48.9166, 2.4705],
+                titre: "Collège Jacques Jorissen",
+                lien: "college_jorissen.html"
+            },
+            {
+                coord: [48.922, 2.46],
+                titre: "Mémorial de la Shoah",
+                lien: "memorial_shoah.html"
+            }
+        ];
+        
+        pointsInteret.forEach(function(point) {
+            L.marker(point.coord).addTo(map)
+                .bindPopup(`<b>${point.titre}</b><br><a href="${point.lien}">En savoir plus</a>`);
+        });
+        
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(function(position) {
+                    var userLat = position.coords.latitude;
+                    var userLon = position.coords.longitude;
+                    L.marker([userLat, userLon]).addTo(map)
+                        .bindPopup("Vous êtes ici").openPopup();
+                    map.setView([userLat, userLon], 14);
+                    
+                    // Vérifier si l'utilisateur est trop loin de Drancy
+                    var distance = getDistance(userLat, userLon, 48.925, 2.45);
+                    if (distance > 10) { // Distance en km
+                        document.getElementById('resetButton').style.display = 'block';
+                    }
+                }, function() {
+                    alert("Géolocalisation non disponible.");
+                });
+            } else {
+                alert("Votre navigateur ne supporte pas la géolocalisation.");
+            }
+        }
+        
+        function resetMap() {
+            map.setView([48.925, 2.45], 14);
+            document.getElementById('resetButton').style.display = 'none';
+        }
+        
+        function getDistance(lat1, lon1, lat2, lon2) {
+            var R = 6371; // Rayon de la Terre en km
+            var dLat = (lat2 - lat1) * Math.PI / 180;
+            var dLon = (lon2 - lon1) * Math.PI / 180;
+            var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+                    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+                    Math.sin(dLon/2) * Math.sin(dLon/2);
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+            return R * c;
+        }
+    </script>
+</body>
+</html>
