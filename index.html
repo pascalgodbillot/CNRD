@@ -62,9 +62,14 @@
                 navigator.geolocation.getCurrentPosition(function(position) {
                     var userLat = position.coords.latitude;
                     var userLon = position.coords.longitude;
-                    L.marker([userLat, userLon]).addTo(map)
-                        .bindPopup("Vous êtes ici").openPopup();
-                    map.setView([userLat, userLon], 14);
+                    var userMarker = L.marker([userLat, userLon], {
+                        icon: L.icon({
+                            iconUrl: 'https://maps.google.com/mapfiles/ms/icons/red-dot.png',
+                            iconSize: [32, 32]
+                        })
+                    }).addTo(map)
+                    .bindPopup("<b>Vous êtes ici</b>").openPopup();
+                    map.setView([userLat, userLon], 16);
                     
                     // Vérifier si l'utilisateur est trop loin de Drancy
                     var distance = getDistance(userLat, userLon, 48.925, 2.45);
